@@ -7,17 +7,32 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gorilla/mux"
 	"github.com/mosaicnetworks/babble/src/net/signal/wamp"
 	"github.com/mosaicnetworks/babble/src/peers"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-const (
-	DiscoveryServerAddress = ":8080"
-	RouterServerAddress    = ":8181"
-	RouterRealm            = "http://" + RouterServerAddress
-)
+var routing = ":8000"
+var realm = "office"
+var discovery = ":8080"
+
+func init() {
+	RootCmd.Flags().StringVar(&routing, "routing", routing, "Routing Listen IP:Port")
+	RootCmd.Flags().StringVar(&discovery, "discovery", discovery, "Discovery Listen IP:Port")
+	viper.BindPFlags(RootCmd.Flags())
+}
+
+//RootCmd is the root command for the signaling server
+var RootCmd = &cobra.Command{
+	Use:   "signal",
+	Short: "WebRTC signaling server using WebSockets",
+	RunE:  runServer,
+}
 
 type group struct {
 	ID          string         `json:"ID"`
@@ -109,15 +124,10 @@ func deleteGroup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
 func main() {
 
-	wampServer, err := wamp.NewServer(RouterServerAddress, RouterRealm)
-	if err != nil {
-		os.Stderr.WriteString("Error starting router: " + err.Error())
-		return
-	}
 
-	go wampServer.Run()
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", homeLink)
@@ -126,6 +136,46 @@ func main() {
 	router.HandleFunc("/groups/{id}", getOneGroup).Methods("GET")
 	router.HandleFunc("/groups/{id}", updateGroup).Methods("PATCH")
 	router.HandleFunc("/groups/{id}", deleteGroup).Methods("DELETE")
-	os.Stdout.WriteString("Starting Discovery Server")
-	log.Fatal(http.ListenAndServe(DiscoveryServerAddress, router))
+	os.Stdout.WriteString("Starting Discovery Server\n")
+	log.Fatal(http.ListenAndServe(discovery, router))
+}
+*/
+
+func runServer(cmd *cobra.Command, args []string) error {
+	server, err := wamp.NewServer(routing, realm)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go server.Run()
+
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", homeLink)
+	router.HandleFunc("/group", createGroup).Methods("POST")
+	router.HandleFunc("/groups", getAllGroups).Methods("GET")
+	router.HandleFunc("/groups/{id}", getOneGroup).Methods("GET")
+	router.HandleFunc("/groups/{id}", updateGroup).Methods("PATCH")
+	router.HandleFunc("/groups/{id}", deleteGroup).Methods("DELETE")
+
+	log.Print("Starting Discovery Server")
+	go log.Fatal(http.ListenAndServe(discovery, router))
+
+	//Prepare sigCh to relay SIGINT and SIGTERM system calls
+	sigCh := make(chan os.Signal)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	<-sigCh
+
+	server.Shutdown()
+
+	return nil
+}
+
+func main() {
+	//Do not print usage when error occurs
+	RootCmd.SilenceUsage = true
+
+	if err := RootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
