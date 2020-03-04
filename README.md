@@ -18,18 +18,15 @@ POST localhost:8080/group
 curl --location --request POST 'localhost:8080/group' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-	"ID":"2",
 	"Title": "office group",
 	"Description": "this group is for office people",
-	"Peers": {
-		"peers": [
-			{
-				"NetAddr":"thenetaddr",
-				"PubKeyHex":"thepubkey",
-				"Moniker":"Monica"
-			}
-			]
-	}
+	"Peers": [
+		{
+			"NetAddr":"thenetaddr",
+			"PubKeyHex":"thepubkey",
+			"Moniker":"Monica"
+		}
+	]
 }'
 ```
 
@@ -40,7 +37,7 @@ GET localhost:8080/groups
 ```
 
 ```json
-[{"ID":"1","Title":"Introduction to Golang","Description":"Come join us for a chance to learn how golang works and get to eventually try it out","Peers":{"peers":[{"NetAddr":"Peer0Addr","PubKeyHex":"XXX","Moniker":"Peer0"}]}},{"ID":"","Title":"","Description":"","Peers":null},{"ID":"","Title":"office group","Description":"this group is for office people","Peers":{"peers":[{"NetAddr":"thenetaddr","PubKeyHex":"thepubkey","Moniker":"Monica"}]}},{"ID":"2","Title":"office group","Description":"this group is for office people","Peers":{"peers":[{"NetAddr":"thenetaddr","PubKeyHex":"thepubkey","Moniker":"Monica"}]}}]
+{"07e42b07-620f-40d0-a062-c15d3e22eb74":{"id":"07e42b07-620f-40d0-a062-c15d3e22eb74","title":"office group","description":"this group is for office people","peers":[{"NetAddr":"thenetaddr","PubKeyHex":"thepubkey","Moniker":"Monica"}]},"a8dd4c0a-f025-4618-8a3b-66fb0553b034":{"id":"a8dd4c0a-f025-4618-8a3b-66fb0553b034","title":"Group1","description":"Useless Group","peers":[{"NetAddr":"alice@localhost","PubKeyHex":"XXX","Moniker":"Alice"},{"NetAddr":"bob@localhost","PubKeyHex":"YYY","Moniker":"Bob"},{"NetAddr":"charlie@localhost","PubKeyHex":"ZZZ","Moniker":"Charlie"}]}}
 ```
 
 ## Get a specific group
@@ -50,7 +47,7 @@ GET localhost:8080/groups/{ID}
 ```
 
 ```json
-{"ID":"1","Title":"Introduction to Golang","Description":"Come join us for a chance to learn how golang works and get to eventually try it out","Peers":{"peers":[{"NetAddr":"Peer0Addr","PubKeyHex":"XXX","Moniker":"Peer0"}]}}
+{"id":"a8dd4c0a-f025-4618-8a3b-66fb0553b034","title":"Group1","description":"Useless Group","peers":[{"NetAddr":"alice@localhost","PubKeyHex":"XXX","Moniker":"Alice"},{"NetAddr":"bob@localhost","PubKeyHex":"YYY","Moniker":"Bob"},{"NetAddr":"charlie@localhost","PubKeyHex":"ZZZ","Moniker":"Charlie"}]}
 ```
 
 ## Update a group
@@ -60,28 +57,26 @@ PATCH localhost:8080/groups/2
 ```
 
 ```bash
-curl --location --request PATCH 'localhost:8080/groups/2' \
+curl --location --request PATCH 'localhost:8080/groups/07e42b07-620f-40d0-a062-c15d3e22eb74' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-	"ID":"2",
+	"ID":"07e42b07-620f-40d0-a062-c15d3e22eb74",
 	"Title": "office group",
 	"Description": "this group has been modified",
-	"Peers": {
-		"peers": [
-			{
-				"NetAddr":"thenetaddr",
-				"PubKeyHex":"thepubkey",
-				"Moniker":"Monica"
-			}
-			]
-	}
+	"Peers": [
+		{
+			"NetAddr":"thenetaddr",
+			"PubKeyHex":"thepubkey",
+			"Moniker":"Monica"
+		}
+	]
 }'
 ```
 
 ## Delete a group
 
 ```bash
-DELETE localhost:8080/groups/2
+DELETE localhost:8080/groups/07e42b07-620f-40d0-a062-c15d3e22eb74
 ```
 
 ```
