@@ -35,10 +35,10 @@ var RootCmd = &cobra.Command{
 }
 
 type group struct {
-	ID          string         `json:"ID"`
-	Title       string         `json:"Title"`
-	Description string         `json:"Description"`
-	Peers       *peers.PeerSet `json:"Peers"`
+	ID          string        `json:"ID"`
+	Title       string        `json:"Title"`
+	Description string        `json:"Description"`
+	Peers       []*peers.Peer `json:"Peers"`
 }
 
 var allGroups = []group{
@@ -48,7 +48,7 @@ var allGroups = []group{
 		Description: "Come join us for a chance to learn how golang works and get to eventually try it out",
 		Peers: peers.NewPeerSet([]*peers.Peer{
 			peers.NewPeer("XXX", "Peer0Addr", "Peer0"),
-		}),
+		}).Peers,
 	},
 }
 
