@@ -6,9 +6,17 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/mosaicnetworks/babble/src/net/signal/wamp"
 	"github.com/mosaicnetworks/babble/src/peers"
+)
+
+const (
+	DiscoveryServerAddress = ":8080"
+	RouterServerAddress    = ":8181"
+	RouterRealm            = "http://" + RouterServerAddress
 )
 
 type group struct {
@@ -102,6 +110,15 @@ func deleteGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	wampServer, err := wamp.NewServer(RouterServerAddress, RouterRealm)
+	if err != nil {
+		os.Stderr.WriteString("Error starting router: " + err.Error())
+		return
+	}
+
+	go wampServer.Run()
+
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", homeLink)
 	router.HandleFunc("/group", createGroup).Methods("POST")
@@ -109,5 +126,6 @@ func main() {
 	router.HandleFunc("/groups/{id}", getOneGroup).Methods("GET")
 	router.HandleFunc("/groups/{id}", updateGroup).Methods("PATCH")
 	router.HandleFunc("/groups/{id}", deleteGroup).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	os.Stdout.WriteString("Starting Discovery Server")
+	log.Fatal(http.ListenAndServe(DiscoveryServerAddress, router))
 }
