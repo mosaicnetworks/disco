@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/mosaicnetworks/babble/src/net/signal/wamp"
@@ -38,7 +39,7 @@ type group struct {
 	GroupUID     string        `json:"GroupUID"`
 	GroupName    string        `json:"GroupName"`
 	PubKey       string        `json:"PubKey"`
-	LastUpdated  uint64        `json:"LastUpdated"`
+	LastUpdated  int64         `json:"LastUpdated"`
 	Peers        []*peers.Peer `json:"Peers"`
 	GenesisPeers []*peers.Peer `json:"InitialPeers"`
 }
@@ -73,6 +74,10 @@ func createGroup(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprintf(w, "Error unmarshalling group: %v", err)
 	}
+
+	// Overwrite the last updated time with current server time
+	newGroup.LastUpdated = time.Now().Unix()
+
 	allGroups = append(allGroups, newGroup)
 	//	w.WriteHeader(http.StatusCreated)
 
@@ -112,7 +117,7 @@ func updateGroup(w http.ResponseWriter, r *http.Request) {
 		if singleGroup.GroupUID == groupID {
 			singleGroup.GroupName = updatedGroup.GroupName
 			singleGroup.PubKey = updatedGroup.PubKey
-			singleGroup.LastUpdated = updatedGroup.LastUpdated
+			singleGroup.LastUpdated = time.Now().Unix()
 			singleGroup.Peers = updatedGroup.Peers
 			singleGroup.GenesisPeers = updatedGroup.GenesisPeers
 
