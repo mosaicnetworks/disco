@@ -69,11 +69,15 @@ func createGroup(w http.ResponseWriter, r *http.Request) {
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Print("Kindly enter data with the group title and description only in order to update")
 		fmt.Fprintf(w, "Kindly enter data with the group title and description only in order to update")
 	}
 
+	log.Print(string(reqBody))
+
 	err = json.Unmarshal(reqBody, &newGroup)
 	if err != nil {
+		log.Print("Error unmarshalling")
 		fmt.Fprintf(w, "Error unmarshalling group: %v", err)
 	}
 

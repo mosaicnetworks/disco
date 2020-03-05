@@ -67,6 +67,7 @@ type group struct {
 	GroupUID     string        `json:"GroupUID"`
 	GroupName    string        `json:"GroupName"`
 	PubKey       string        `json:"PubKey"`
+	AppID        string        `json:"AppID"`
 	LastUpdate   int           `json:"LastUpdate"`
 	Peers        []*peers.Peer `json:"Peers"`
 	GenesisPeers []*peers.Peer `json:"InitialPeers"`
@@ -75,6 +76,7 @@ type group struct {
 ```
 + **PubKey** is the public key of the group creator. This is not going to be used immediately - but it does pave the way for the signing of update groups
 + **LastUpdate** is the last update time for this Group Record. It gives some indication of how stale the record is. We might not use it immediately, but as it is relatively simple to implement, it seems prudent to have that flexibility. 
++ **AppID** - the AppID for this App 
 
 This means that we lose the description field, but we were not using it anyway.
 
@@ -83,4 +85,4 @@ This means that we lose the description field, but we were not using it anyway.
 
 + **PubKey** - as above
 + **LastUpdate** - as above
-
++ **AppID** - as above. It is already in P2P. 
