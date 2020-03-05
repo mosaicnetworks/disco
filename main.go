@@ -38,6 +38,7 @@ var RootCmd = &cobra.Command{
 type group struct {
 	GroupUID     string        `json:"GroupUID"`
 	GroupName    string        `json:"GroupName"`
+	AppID        string        `json:"AppID"`
 	PubKey       string        `json:"PubKey"`
 	LastUpdated  int64         `json:"LastUpdated"`
 	Peers        []*peers.Peer `json:"Peers"`
@@ -49,6 +50,7 @@ var allGroups = []group{
 		GroupUID:    "1",
 		GroupName:   "Introduction to Golang",
 		PubKey:      "ABCDEF",
+		AppID:       "io.mosaicnetworks.sample",
 		LastUpdated: 1583418648,
 		Peers: peers.NewPeerSet([]*peers.Peer{
 			peers.NewPeer("XXX", "Peer0Addr", "Peer0")}).Peers,
@@ -117,6 +119,7 @@ func updateGroup(w http.ResponseWriter, r *http.Request) {
 		if singleGroup.GroupUID == groupID {
 			singleGroup.GroupName = updatedGroup.GroupName
 			singleGroup.PubKey = updatedGroup.PubKey
+			singleGroup.AppID = updatedGroup.AppID
 			singleGroup.LastUpdated = time.Now().Unix()
 			singleGroup.Peers = updatedGroup.Peers
 			singleGroup.GenesisPeers = updatedGroup.GenesisPeers
