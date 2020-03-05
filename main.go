@@ -35,18 +35,20 @@ var RootCmd = &cobra.Command{
 }
 
 type group struct {
-	ID           string        `json:"ID"`
-	Title        string        `json:"Title"`
-	Description  string        `json:"Description"`
+	GroupUID     string        `json:"GroupUID"`
+	GroupName    string        `json:"GroupName"`
+	PubKey       string        `json:"PubKey"`
+	LastUpdated  uint64        `json:"LastUpdated"`
 	Peers        []*peers.Peer `json:"Peers"`
 	GenesisPeers []*peers.Peer `json:"InitialPeers"`
 }
 
 var allGroups = []group{
 	{
-		ID:          "1",
-		Title:       "Introduction to Golang",
-		Description: "Come join us for a chance to learn how golang works and get to eventually try it out",
+		GroupUID:    "1",
+		GroupName:   "Introduction to Golang",
+		PubKey:      "ABCDEF",
+		LastUpdated: 1583418648,
 		Peers: peers.NewPeerSet([]*peers.Peer{
 			peers.NewPeer("XXX", "Peer0Addr", "Peer0")}).Peers,
 		GenesisPeers: peers.NewPeerSet([]*peers.Peer{
@@ -81,7 +83,7 @@ func getOneGroup(w http.ResponseWriter, r *http.Request) {
 	groupID := mux.Vars(r)["id"]
 
 	for _, singleGroup := range allGroups {
-		if singleGroup.ID == groupID {
+		if singleGroup.GroupUID == groupID {
 			json.NewEncoder(w).Encode(singleGroup)
 		}
 	}
@@ -107,9 +109,10 @@ func updateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i, singleGroup := range allGroups {
-		if singleGroup.ID == groupID {
-			singleGroup.Title = updatedGroup.Title
-			singleGroup.Description = updatedGroup.Description
+		if singleGroup.GroupUID == groupID {
+			singleGroup.GroupName = updatedGroup.GroupName
+			singleGroup.PubKey = updatedGroup.PubKey
+			singleGroup.LastUpdated = updatedGroup.LastUpdated
 			singleGroup.Peers = updatedGroup.Peers
 			singleGroup.GenesisPeers = updatedGroup.GenesisPeers
 
@@ -123,29 +126,12 @@ func deleteGroup(w http.ResponseWriter, r *http.Request) {
 	groupID := mux.Vars(r)["id"]
 
 	for i, singleGroup := range allGroups {
-		if singleGroup.ID == groupID {
+		if singleGroup.GroupUID == groupID {
 			allGroups = append(allGroups[:i], allGroups[i+1:]...)
 			fmt.Fprintf(w, "The group with ID %v has been deleted successfully", groupID)
 		}
 	}
 }
-
-/*
-func main() {
-
-
-
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", homeLink)
-	router.HandleFunc("/group", createGroup).Methods("POST")
-	router.HandleFunc("/groups", getAllGroups).Methods("GET")
-	router.HandleFunc("/groups/{id}", getOneGroup).Methods("GET")
-	router.HandleFunc("/groups/{id}", updateGroup).Methods("PATCH")
-	router.HandleFunc("/groups/{id}", deleteGroup).Methods("DELETE")
-	os.Stdout.WriteString("Starting Discovery Server\n")
-	log.Fatal(http.ListenAndServe(discovery, router))
-}
-*/
 
 func runServer(cmd *cobra.Command, args []string) error {
 	server, err := wamp.NewServer(routing, realm)
