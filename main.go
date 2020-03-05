@@ -35,10 +35,11 @@ var RootCmd = &cobra.Command{
 }
 
 type group struct {
-	ID          string        `json:"ID"`
-	Title       string        `json:"Title"`
-	Description string        `json:"Description"`
-	Peers       []*peers.Peer `json:"Peers"`
+	ID           string        `json:"ID"`
+	Title        string        `json:"Title"`
+	Description  string        `json:"Description"`
+	Peers        []*peers.Peer `json:"Peers"`
+	GenesisPeers []*peers.Peer `json:"InitialPeers"`
 }
 
 var allGroups = []group{
@@ -47,8 +48,9 @@ var allGroups = []group{
 		Title:       "Introduction to Golang",
 		Description: "Come join us for a chance to learn how golang works and get to eventually try it out",
 		Peers: peers.NewPeerSet([]*peers.Peer{
-			peers.NewPeer("XXX", "Peer0Addr", "Peer0"),
-		}).Peers,
+			peers.NewPeer("XXX", "Peer0Addr", "Peer0")}).Peers,
+		GenesisPeers: peers.NewPeerSet([]*peers.Peer{
+			peers.NewPeer("XXX", "Peer0Addr", "Peer0")}).Peers,
 	},
 }
 
@@ -58,6 +60,8 @@ func homeLink(w http.ResponseWriter, r *http.Request) {
 
 func createGroup(w http.ResponseWriter, r *http.Request) {
 	var newGroup group
+	log.Print("createGroup")
+
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Kindly enter data with the group title and description only in order to update")
@@ -68,7 +72,7 @@ func createGroup(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error unmarshalling group: %v", err)
 	}
 	allGroups = append(allGroups, newGroup)
-	w.WriteHeader(http.StatusCreated)
+	//	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(newGroup)
 }
@@ -84,6 +88,7 @@ func getOneGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllGroups(w http.ResponseWriter, r *http.Request) {
+	log.Print("getAllGroups")
 	json.NewEncoder(w).Encode(allGroups)
 }
 
@@ -106,6 +111,7 @@ func updateGroup(w http.ResponseWriter, r *http.Request) {
 			singleGroup.Title = updatedGroup.Title
 			singleGroup.Description = updatedGroup.Description
 			singleGroup.Peers = updatedGroup.Peers
+			singleGroup.GenesisPeers = updatedGroup.GenesisPeers
 
 			allGroups = append(allGroups[:i], singleGroup)
 			json.NewEncoder(w).Encode(singleGroup)
