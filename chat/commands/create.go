@@ -44,7 +44,14 @@ func create(cmd *cobra.Command, args []string) error {
 	go engine.Run()
 	defer waitForInterrupt(engine)
 
-	return advertiseGroup(groupID, title, engine.Node.GetPeers())
+	err = advertiseGroup(groupID, title, engine.Node.GetPeers())
+	if err != nil {
+		return err
+	}
+
+	chat()
+
+	return nil
 }
 
 func advertiseGroup(groupID string, title string, peers []*peers.Peer) error {
