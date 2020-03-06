@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var routing = ":8000"
+var routing = ":9090"
 var realm = "office"
 var discovery = ":8080"
 
