@@ -2,12 +2,12 @@ package commands
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"time"
 
 	"github.com/jroimartin/gocui"
 	"github.com/manifoldco/promptui"
+	"github.com/mosaicnetworks/babble/src/proxy/dummy"
 	"github.com/mosaicnetworks/disco"
 )
 
@@ -74,10 +74,9 @@ func selectGroup(allGroups map[string]*disco.Group) *disco.Group {
 	return selectedGroup
 }
 
-func chat(submitCh chan []byte, file string) {
+func chat(proxy *dummy.InmemDummyClient, file string) {
 	//XXX
-	_logFile = file
-	_submitCh = submitCh
+	_submitCh = proxy.SubmitCh()
 
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
@@ -99,20 +98,15 @@ func chat(submitCh chan []byte, file string) {
 					return err
 				}
 				v.Clear()
-				b, err := ioutil.ReadFile(_logFile)
-				if err != nil {
-					panic(err)
+				for _, tx := range proxy.GetCommittedTransactions() {
+					fmt.Fprintf(v, "%s", tx)
 				}
-				fmt.Fprintf(v, "%s", b)
 				return nil
 			})
 			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 
-	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Panicln(err)
-	}
 }
 
 func layout(g *gocui.Gui) error {
@@ -122,30 +116,8 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-
 		v.Wrap = true
 		v.Frame = true
-
-		b, err := ioutil.ReadFile(_logFile)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Fprintf(v, "%s", b)
-	}
-
-	if v, err := g.SetView("cmdline", -1, maxY-5, maxX, maxY); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-
-		v.Editable = true
-		v.Wrap = true
-		g.Cursor = true
-		v.Frame = true
-
-		if _, err := g.SetCurrentView("cmdline"); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -155,22 +127,6 @@ func initKeybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("cmdline",
-		gocui.KeyEnter,
-		gocui.ModNone,
-		func(g *gocui.Gui, v *gocui.View) error {
-			_submitCh <- []byte(v.ViewBuffer())
-			v.SetCursor(0, 0)
-			v.SetOrigin(0, 0)
-			v.Clear()
-			return nil
-		},
-	); err != nil {
-		return err
-	}
-	return nil
-}
 
-func quit(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
+	return nil
 }

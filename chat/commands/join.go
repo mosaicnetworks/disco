@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/mosaicnetworks/disco/client"
 	"github.com/spf13/cobra"
@@ -29,20 +30,32 @@ func join(cmd *cobra.Command, args []string) error {
 	moniker := promptMoniker()
 
 	configManager := NewConfigManager(_config.BaseDir)
-
 	err = configManager.CreateForJoin(selectedGroup)
 	if err != nil {
 		return err
 	}
 
-	bchat, err := newBChat(_config, selectedGroup.ID, moniker)
+	// XXX
+	oldStdout := os.Stdout
+	oldStderr := os.Stderr
+	_, wf, _ := os.Pipe()
+
+	defer func() {
+		wf.Close()
+		os.Stdout = oldStdout
+		os.Stderr = oldStderr
+	}()
+
+	os.Stdout = wf
+	os.Stderr = wf
+	// end XXX
+
+	bchat, err := NewBChat(_config, selectedGroup.ID, moniker)
 	if err != nil {
 		return err
 	}
 
-	go bchat.Engine.Run()
-
-	waitForInterrupt(bchat.Engine)
+	bchat.Run()
 
 	return nil
 }
