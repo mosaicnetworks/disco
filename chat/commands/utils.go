@@ -1,11 +1,10 @@
 package commands
 
 import (
-	"encoding/hex"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
-	"os"
+	"time"
 
 	"github.com/jroimartin/gocui"
 	"github.com/manifoldco/promptui"
@@ -16,6 +15,10 @@ const (
 	// Input box height.
 	ih = 3
 )
+
+// XXX
+var _logFile string
+var _submitCh chan []byte
 
 func promptTitle() string {
 	titlePrompt := promptui.Prompt{
@@ -71,7 +74,11 @@ func selectGroup(allGroups map[string]*disco.Group) *disco.Group {
 	return selectedGroup
 }
 
-func chat() {
+func chat(submitCh chan []byte, file string) {
+	//XXX
+	_logFile = file
+	_submitCh = submitCh
+
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Panicln(err)
@@ -84,14 +91,24 @@ func chat() {
 		log.Fatalln(err)
 	}
 
-	vdst, err := g.View("main")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	dumper := hex.Dumper(vdst)
-
-	go io.Copy(dumper, os.Stdout)
+	go func() {
+		for {
+			g.Update(func(g *gocui.Gui) error {
+				v, err := g.View("main")
+				if err != nil {
+					return err
+				}
+				v.Clear()
+				b, err := ioutil.ReadFile(_logFile)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Fprintf(v, "%s", b)
+				return nil
+			})
+			time.Sleep(100 * time.Millisecond)
+		}
+	}()
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
@@ -105,8 +122,15 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Autoscroll = true
+
 		v.Wrap = true
+		v.Frame = true
+
+		b, err := ioutil.ReadFile(_logFile)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Fprintf(v, "%s", b)
 	}
 
 	if v, err := g.SetView("cmdline", -1, maxY-5, maxX, maxY); err != nil {
@@ -116,6 +140,8 @@ func layout(g *gocui.Gui) error {
 
 		v.Editable = true
 		v.Wrap = true
+		g.Cursor = true
+		v.Frame = true
 
 		if _, err := g.SetCurrentView("cmdline"); err != nil {
 			return err
@@ -129,21 +155,17 @@ func initKeybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("main", gocui.KeyArrowUp, gocui.ModNone,
+	if err := g.SetKeybinding("cmdline",
+		gocui.KeyEnter,
+		gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
-			scrollView(v, -1)
+			_submitCh <- []byte(v.ViewBuffer())
+			v.SetCursor(0, 0)
+			v.SetOrigin(0, 0)
+			v.Clear()
 			return nil
-		}); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("main", gocui.KeyArrowDown, gocui.ModNone,
-		func(g *gocui.Gui, v *gocui.View) error {
-			scrollView(v, 1)
-			return nil
-		}); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("cmdline", gocui.KeyEnter, gocui.ModNone, vcopy("main")); err != nil {
+		},
+	); err != nil {
 		return err
 	}
 	return nil
@@ -151,35 +173,4 @@ func initKeybindings(g *gocui.Gui) error {
 
 func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
-}
-
-func vcopy(dst string) func(g *gocui.Gui, v *gocui.View) error {
-	return func(g *gocui.Gui, v *gocui.View) error {
-		vdst, err := g.View(dst)
-		if err != nil {
-			return err
-		}
-		fmt.Fprint(vdst, v.Buffer())
-
-		if err := v.SetCursor(0, 0); err != nil {
-			return err
-		}
-		if err := v.SetOrigin(0, 0); err != nil {
-			return err
-		}
-		v.Clear()
-
-		return nil
-	}
-}
-
-func scrollView(v *gocui.View, dy int) error {
-	if v != nil {
-		v.Autoscroll = false
-		ox, oy := v.Origin()
-		if err := v.SetOrigin(ox, oy+dy); err != nil {
-			return err
-		}
-	}
-	return nil
 }

@@ -35,14 +35,14 @@ func join(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	engine, err := newBChat(_config, selectedGroup.ID, moniker)
+	bchat, err := newBChat(_config, selectedGroup.ID, moniker)
 	if err != nil {
 		return err
 	}
 
-	go engine.Run()
+	go bchat.Engine.Run()
 
-	waitForInterrupt(engine)
+	waitForInterrupt(bchat.Engine)
 
 	return nil
 }

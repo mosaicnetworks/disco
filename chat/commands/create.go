@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"os"
+	"path"
 
 	"github.com/mosaicnetworks/babble/src/peers"
 	"github.com/mosaicnetworks/disco"
@@ -24,6 +26,21 @@ func NewCreateCmd() *cobra.Command {
 // discovery service and wait for an interrup signal before politely leaving the
 // BChat.
 func create(cmd *cobra.Command, args []string) error {
+	// XXX
+	oldStdout := os.Stdout
+	oldStderr := os.Stderr
+	_, wf, _ := os.Pipe()
+
+	defer func() {
+		wf.Close()
+		os.Stdout = oldStdout
+		os.Stderr = oldStderr
+	}()
+
+	os.Stdout = wf
+	os.Stderr = wf
+	// end XXX
+
 	title := promptTitle()
 	moniker := promptMoniker()
 
@@ -36,20 +53,23 @@ func create(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	engine, err := newBChat(_config, groupID, moniker)
+	bchat, err := newBChat(_config, groupID, moniker)
 	if err != nil {
 		return err
 	}
 
-	go engine.Run()
-	defer waitForInterrupt(engine)
+	go bchat.Engine.Run()
+	defer waitForInterrupt(bchat.Engine)
 
-	err = advertiseGroup(groupID, title, engine.Node.GetPeers())
+	err = advertiseGroup(groupID, title, bchat.Engine.Node.GetPeers())
 	if err != nil {
 		return err
 	}
 
-	chat()
+	chat(
+		bchat.Proxy.SubmitCh(),
+		path.Join(_config.BaseDir, groupID, "info.log"),
+	) //XXX
 
 	return nil
 }

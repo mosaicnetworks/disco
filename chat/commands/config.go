@@ -8,7 +8,6 @@ import (
 	"runtime"
 
 	"github.com/mosaicnetworks/babble/src/config"
-	"github.com/mosaicnetworks/babble/src/proxy/dummy"
 )
 
 // BChatConfig contains configuration for the Run command
@@ -37,7 +36,7 @@ func (c *BChatConfig) BabbleConfig(groupID string, moniker string) *config.Confi
 	babbleConfig.Moniker = moniker
 	babbleConfig.SignalAddr = c.SignalAddr
 	babbleConfig.WebRTC = true
-	babbleConfig.Proxy = dummy.NewInmemDummyClient(babbleConfig.Logger())
+
 	return babbleConfig
 }
 
