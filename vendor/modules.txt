@@ -1,0 +1,234 @@
+# github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9
+github.com/AndreasBriese/bbloom
+# github.com/btcsuite/btcd v0.0.0-20190523000118-16327141da8c
+github.com/btcsuite/btcd/btcec
+# github.com/cheekybits/genny v1.0.0
+github.com/cheekybits/genny/generic
+# github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
+github.com/chzyer/readline
+# github.com/dgraph-io/badger v1.6.0
+github.com/dgraph-io/badger
+github.com/dgraph-io/badger/options
+github.com/dgraph-io/badger/pb
+github.com/dgraph-io/badger/skl
+github.com/dgraph-io/badger/table
+github.com/dgraph-io/badger/y
+# github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2
+github.com/dgryski/go-farm
+# github.com/dustin/go-humanize v1.0.0
+github.com/dustin/go-humanize
+# github.com/fsnotify/fsnotify v1.4.7
+github.com/fsnotify/fsnotify
+# github.com/gammazero/nexus/v3 v3.0.0
+github.com/gammazero/nexus/v3/client
+github.com/gammazero/nexus/v3/router
+github.com/gammazero/nexus/v3/router/auth
+github.com/gammazero/nexus/v3/stdlog
+github.com/gammazero/nexus/v3/transport
+github.com/gammazero/nexus/v3/transport/serialize
+github.com/gammazero/nexus/v3/wamp
+github.com/gammazero/nexus/v3/wamp/crsign
+# github.com/golang/protobuf v1.3.1
+github.com/golang/protobuf/proto
+# github.com/google/uuid v1.1.1
+## explicit
+github.com/google/uuid
+# github.com/gorilla/mux v1.7.4
+## explicit
+github.com/gorilla/mux
+# github.com/gorilla/websocket v1.4.1
+github.com/gorilla/websocket
+# github.com/hashicorp/hcl v1.0.0
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/printer
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/jonknight73/badger v0.0.0-20200218142835-fa9c019859f6
+github.com/jonknight73/badger
+github.com/jonknight73/badger/options
+github.com/jonknight73/badger/pb
+github.com/jonknight73/badger/skl
+github.com/jonknight73/badger/table
+github.com/jonknight73/badger/y
+# github.com/jroimartin/gocui v0.4.0
+## explicit
+github.com/jroimartin/gocui
+# github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
+github.com/juju/ansiterm
+github.com/juju/ansiterm/tabwriter
+# github.com/konsorten/go-windows-terminal-sequences v1.0.2
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/lucas-clemente/quic-go v0.7.1-0.20190401152353-907071221cf9
+github.com/lucas-clemente/quic-go
+github.com/lucas-clemente/quic-go/internal/ackhandler
+github.com/lucas-clemente/quic-go/internal/congestion
+github.com/lucas-clemente/quic-go/internal/flowcontrol
+github.com/lucas-clemente/quic-go/internal/handshake
+github.com/lucas-clemente/quic-go/internal/protocol
+github.com/lucas-clemente/quic-go/internal/qerr
+github.com/lucas-clemente/quic-go/internal/utils
+github.com/lucas-clemente/quic-go/internal/wire
+# github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a
+github.com/lunixbochs/vtclean
+# github.com/magiconair/properties v1.8.1
+github.com/magiconair/properties
+# github.com/manifoldco/promptui v0.7.0
+## explicit
+github.com/manifoldco/promptui
+github.com/manifoldco/promptui/list
+github.com/manifoldco/promptui/screenbuf
+# github.com/marten-seemann/qtls v0.2.3
+github.com/marten-seemann/qtls
+# github.com/mattn/go-colorable v0.1.2
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.8
+github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.8
+## explicit
+github.com/mattn/go-runewidth
+# github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
+github.com/mgutz/ansi
+# github.com/mitchellh/mapstructure v1.1.2
+github.com/mitchellh/mapstructure
+# github.com/mosaicnetworks/babble v0.0.0-00010101000000-000000000000 => /home/martin/gowork/src/github.com/mosaicnetworks/babble
+## explicit
+github.com/mosaicnetworks/babble/src/babble
+github.com/mosaicnetworks/babble/src/common
+github.com/mosaicnetworks/babble/src/config
+github.com/mosaicnetworks/babble/src/crypto
+github.com/mosaicnetworks/babble/src/crypto/keys
+github.com/mosaicnetworks/babble/src/hashgraph
+github.com/mosaicnetworks/babble/src/net
+github.com/mosaicnetworks/babble/src/net/signal
+github.com/mosaicnetworks/babble/src/net/signal/wamp
+github.com/mosaicnetworks/babble/src/node
+github.com/mosaicnetworks/babble/src/node/state
+github.com/mosaicnetworks/babble/src/peers
+github.com/mosaicnetworks/babble/src/proxy
+github.com/mosaicnetworks/babble/src/proxy/dummy
+github.com/mosaicnetworks/babble/src/proxy/inmem
+github.com/mosaicnetworks/babble/src/proxy/socket/babble
+github.com/mosaicnetworks/babble/src/service
+# github.com/nsf/termbox-go v0.0.0-20200204031403-4d2b513ad8be
+## explicit
+github.com/nsf/termbox-go
+# github.com/pelletier/go-toml v1.2.0
+github.com/pelletier/go-toml
+# github.com/pion/datachannel v1.4.14
+github.com/pion/datachannel
+# github.com/pion/dtls/v2 v2.0.0-rc.6
+github.com/pion/dtls/v2
+github.com/pion/dtls/v2/internal/closer
+github.com/pion/dtls/v2/internal/net/deadline
+github.com/pion/dtls/v2/internal/net/udp
+github.com/pion/dtls/v2/pkg/crypto/ccm
+github.com/pion/dtls/v2/pkg/crypto/fingerprint
+# github.com/pion/ice v0.7.8
+github.com/pion/ice
+# github.com/pion/logging v0.2.2
+github.com/pion/logging
+# github.com/pion/mdns v0.0.4
+github.com/pion/mdns
+# github.com/pion/quic v0.1.1
+github.com/pion/quic
+github.com/pion/quic/internal/wrapper
+# github.com/pion/rtcp v1.2.1
+github.com/pion/rtcp
+# github.com/pion/rtp v1.3.2
+github.com/pion/rtp
+github.com/pion/rtp/codecs
+# github.com/pion/sctp v1.7.4
+github.com/pion/sctp
+# github.com/pion/sdp/v2 v2.3.4
+github.com/pion/sdp/v2
+# github.com/pion/srtp v1.2.7
+github.com/pion/srtp
+# github.com/pion/stun v0.3.3
+github.com/pion/stun
+github.com/pion/stun/internal/hmac
+# github.com/pion/transport v0.8.10
+github.com/pion/transport/packetio
+github.com/pion/transport/vnet
+# github.com/pion/turn/v2 v2.0.2
+github.com/pion/turn/v2
+github.com/pion/turn/v2/internal/allocation
+github.com/pion/turn/v2/internal/client
+github.com/pion/turn/v2/internal/ipnet
+github.com/pion/turn/v2/internal/proto
+github.com/pion/turn/v2/internal/server
+# github.com/pion/webrtc/v2 v2.2.0
+github.com/pion/webrtc/v2
+github.com/pion/webrtc/v2/internal/mux
+github.com/pion/webrtc/v2/internal/util
+github.com/pion/webrtc/v2/pkg/media
+github.com/pion/webrtc/v2/pkg/rtcerr
+# github.com/pkg/errors v0.9.1
+github.com/pkg/errors
+# github.com/sirupsen/logrus v1.4.2
+## explicit
+github.com/sirupsen/logrus
+# github.com/spf13/afero v1.2.2
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.3.0
+github.com/spf13/cast
+# github.com/spf13/cobra v0.0.6
+## explicit
+github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v1.1.0
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v1.0.3
+github.com/spf13/pflag
+# github.com/spf13/viper v1.6.2
+## explicit
+github.com/spf13/viper
+# github.com/subosito/gotenv v1.2.0
+github.com/subosito/gotenv
+# github.com/ugorji/go/codec v1.1.7
+github.com/ugorji/go/codec
+# github.com/x-cray/logrus-prefixed-formatter v0.5.2
+github.com/x-cray/logrus-prefixed-formatter
+# golang.org/x/crypto v0.0.0-20200128174031-69ecbb4d6d5d
+golang.org/x/crypto/chacha20
+golang.org/x/crypto/chacha20poly1305
+golang.org/x/crypto/cryptobyte
+golang.org/x/crypto/cryptobyte/asn1
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/hkdf
+golang.org/x/crypto/internal/subtle
+golang.org/x/crypto/pbkdf2
+golang.org/x/crypto/poly1305
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+golang.org/x/net/bpf
+golang.org/x/net/dns/dnsmessage
+golang.org/x/net/internal/iana
+golang.org/x/net/internal/socket
+golang.org/x/net/internal/timeseries
+golang.org/x/net/ipv4
+golang.org/x/net/trace
+# golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e
+golang.org/x/sys/cpu
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/text v0.3.2
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+# golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
+# gopkg.in/ini.v1 v1.51.0
+gopkg.in/ini.v1
+# gopkg.in/yaml.v2 v2.2.4
+gopkg.in/yaml.v2
+# github.com/mosaicnetworks/babble => /home/martin/gowork/src/github.com/mosaicnetworks/babble
