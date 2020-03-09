@@ -1,21 +1,39 @@
-package main
+package server
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/mosaicnetworks/disco"
+	"github.com/mosaicnetworks/disco/group"
 )
 
-func homeLink(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome home!")
+type DiscoServer struct {
+	repo group.GroupRepository
 }
 
-func createGroup(w http.ResponseWriter, r *http.Request) {
-	var newGroup disco.Group
+func NewDiscoServer(repo group.GroupRepository) *DiscoServer {
+	return &DiscoServer{
+		repo: repo,
+	}
+}
+
+func (s *DiscoServer) Serve(bindAddr string) {
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/group", s.CreateGroup).Methods("POST")
+	router.HandleFunc("/groups", s.GetAllGroups).Methods("GET")
+	router.HandleFunc("/groups/{id}", s.GetOneGroup).Methods("GET")
+	router.HandleFunc("/groups/{id}", s.UpdateGroup).Methods("PATCH")
+	router.HandleFunc("/groups/{id}", s.DeleteGroup).Methods("DELETE")
+	log.Fatal(http.ListenAndServe(bindAddr, router))
+	return
+}
+
+func (s *DiscoServer) CreateGroup(w http.ResponseWriter, r *http.Request) {
+	var newGroup group.Group
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Kindly enter data with the group title and description only in order to update")
@@ -26,7 +44,7 @@ func createGroup(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error unmarshalling group: %v", err)
 	}
 
-	id, err := _groupRepo.SetGroup(&newGroup)
+	id, err := s.repo.SetGroup(&newGroup)
 	if err != nil {
 		fmt.Fprintf(w, "Error saving group: %v", err)
 	}
@@ -35,10 +53,10 @@ func createGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(id)
 }
 
-func getOneGroup(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) GetOneGroup(w http.ResponseWriter, r *http.Request) {
 	groupID := mux.Vars(r)["id"]
 
-	group, err := _groupRepo.GetGroup(groupID)
+	group, err := s.repo.GetGroup(groupID)
 	if err != nil {
 		fmt.Fprintf(w, "Error getting group %s: %v", groupID, err)
 	}
@@ -46,16 +64,16 @@ func getOneGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(group)
 }
 
-func getAllGroups(w http.ResponseWriter, r *http.Request) {
-	allGroups, err := _groupRepo.GetAllGroups()
+func (s *DiscoServer) GetAllGroups(w http.ResponseWriter, r *http.Request) {
+	allGroups, err := s.repo.GetAllGroups()
 	if err != nil {
 		fmt.Fprintf(w, "Error getting groups: %v", err)
 	}
 	json.NewEncoder(w).Encode(allGroups)
 }
 
-func updateGroup(w http.ResponseWriter, r *http.Request) {
-	var updatedGroup disco.Group
+func (s *DiscoServer) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+	var updatedGroup group.Group
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -67,7 +85,7 @@ func updateGroup(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error parsing group: %v", err)
 	}
 
-	id, err := _groupRepo.SetGroup(&updatedGroup)
+	id, err := s.repo.SetGroup(&updatedGroup)
 	if err != nil {
 		fmt.Fprintf(w, "Error setting group: %v", err)
 	}
@@ -75,10 +93,10 @@ func updateGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(id)
 }
 
-func deleteGroup(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	groupID := mux.Vars(r)["id"]
 
-	err := _groupRepo.DeleteGroup(groupID)
+	err := s.repo.DeleteGroup(groupID)
 	if err != nil {
 		fmt.Fprintf(w, "Error deleting group: %v", err)
 	}

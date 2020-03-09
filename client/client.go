@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/mosaicnetworks/disco"
+	"github.com/mosaicnetworks/disco/group"
 )
 
 // DiscoClient is a client for the Discovery API
@@ -25,7 +25,7 @@ func NewDiscoClient(url string) *DiscoClient {
 
 // GetAllGroups returs all groups in a map where the key is the ID of the group
 // and the value is a pointer to the corresponding Group object.
-func (c *DiscoClient) GetAllGroups() (map[string]*disco.Group, error) {
+func (c *DiscoClient) GetAllGroups() (map[string]*group.Group, error) {
 	path := fmt.Sprintf("%s/groups", c.url)
 	fmt.Println("path: ", path)
 
@@ -36,7 +36,7 @@ func (c *DiscoClient) GetAllGroups() (map[string]*disco.Group, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
-	var allGroups map[string]*disco.Group
+	var allGroups map[string]*group.Group
 	err = json.Unmarshal(body, &allGroups)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing groups: %v", err)
@@ -46,7 +46,7 @@ func (c *DiscoClient) GetAllGroups() (map[string]*disco.Group, error) {
 }
 
 // GetGroupByID gets a single group by ID
-func (c *DiscoClient) GetGroupByID(id string) (*disco.Group, error) {
+func (c *DiscoClient) GetGroupByID(id string) (*group.Group, error) {
 	path := fmt.Sprintf("%s/groups/%s", c.url, id)
 	fmt.Println("path: ", path)
 
@@ -57,7 +57,7 @@ func (c *DiscoClient) GetGroupByID(id string) (*disco.Group, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
-	var group *disco.Group
+	var group *group.Group
 	err = json.Unmarshal(body, &group)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing group: %v", err)
@@ -68,7 +68,7 @@ func (c *DiscoClient) GetGroupByID(id string) (*disco.Group, error) {
 
 // CreateGroup adds a group to the discovery server. The group's ID field should
 // be empty as it will be set by the server.
-func (c *DiscoClient) CreateGroup(group disco.Group) (string, error) {
+func (c *DiscoClient) CreateGroup(group group.Group) (string, error) {
 	path := fmt.Sprintf("%s/group", c.url)
 	fmt.Println("path: ", path)
 

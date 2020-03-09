@@ -1,13 +1,14 @@
-package disco
+package group
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/google/uuid"
 )
 
 // GroupRepository defines an interface for a repository where groups can be
-// queried, added, and manipulated
+// queried, added, and manipulated. It should be thread safe.
 type GroupRepository interface {
 	GetAllGroups() (map[string]*Group, error)
 	GetGroup(string) (*Group, error)
@@ -16,8 +17,9 @@ type GroupRepository interface {
 }
 
 // InmemGroupRepository implements the GroupRepository interface with an inmem
-// map of groups
+// map of groups. It is thread safe.
 type InmemGroupRepository struct {
+	sync.Mutex
 	groups map[string]*Group
 }
 
@@ -31,11 +33,17 @@ func NewInmemGroupRepository() *InmemGroupRepository {
 // GetAllGroups implements the GroupRepository interface and returns all the
 // groups
 func (igr *InmemGroupRepository) GetAllGroups() (map[string]*Group, error) {
+	igr.Lock()
+	defer igr.Unlock()
+
 	return igr.groups, nil
 }
 
 // GetGroup implements the GroupRepository interface and returns a group by ID
 func (igr *InmemGroupRepository) GetGroup(id string) (*Group, error) {
+	igr.Lock()
+	defer igr.Unlock()
+
 	g, ok := igr.groups[id]
 	if !ok {
 		return nil, fmt.Errorf("Group %s not found", id)
@@ -53,6 +61,9 @@ func (igr *InmemGroupRepository) SetGroup(group *Group) (string, error) {
 		group.ID = uuid.New().String()
 	}
 
+	igr.Lock()
+	defer igr.Unlock()
+
 	igr.groups[group.ID] = group
 
 	return group.ID, nil
@@ -61,6 +72,9 @@ func (igr *InmemGroupRepository) SetGroup(group *Group) (string, error) {
 // DeleteGroup implements the GroupRepository interface and removes a group from
 // the map
 func (igr *InmemGroupRepository) DeleteGroup(id string) error {
+	igr.Lock()
+	defer igr.Unlock()
+
 	delete(igr.groups, id)
 	return nil
 }

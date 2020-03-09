@@ -1,4 +1,4 @@
-package disco
+package group
 
 import "github.com/mosaicnetworks/babble/src/peers"
 

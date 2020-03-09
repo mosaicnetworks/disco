@@ -4,7 +4,10 @@ Disco is a discovery server for Babble groups.
 
 To start it on `localhost:8080` (hardcoded for now):
 
-`go run main.go`
+```bash
+cd server/cmd
+go run main.go
+```
 
 It exposes the following REST API:
 
