@@ -3,7 +3,7 @@
 
 
 run:
-	go run main.go
+	go run server/cmd/main.go
 
 build: 
 	go build -o build/disco main.go

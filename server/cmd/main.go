@@ -10,5 +10,5 @@ func main() {
 
 	discoServer := server.NewDiscoServer(groupRepo)
 
-	discoServer.Serve(":8080", ":8888", "office")
+	discoServer.Serve(":8080", ":9090", "office")
 }
