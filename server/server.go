@@ -12,18 +12,25 @@ import (
 	"github.com/mosaicnetworks/disco/group"
 )
 
+// DiscoServer is a peer-discovery and webrtc-signaling service for Babble.
+// Peer-discovery enables users to advertise groups that other people can join
+// and is exposed over a regular HTTP REST API.
+// WebRTC-signaling enables users to exchange connection metadata (SDP) to
+// create direct p2p connections, and relies on the WAMP protocol which is
+// basically RPC over web-sockets.
 type DiscoServer struct {
 	repo group.GroupRepository
 }
 
+// NewDiscoServer instantiates a new DiscoServer with a GroupRepository.
 func NewDiscoServer(repo group.GroupRepository) *DiscoServer {
 	return &DiscoServer{
 		repo: repo,
 	}
 }
 
+// Serve starts the peer-discovery and signaling services
 func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
-	// XXX
 	wampServer, err := wamp.NewServer(signalAddr, realm)
 	if err != nil {
 		log.Fatal(err)
@@ -32,16 +39,16 @@ func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
 	defer wampServer.Shutdown()
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/group", s.CreateGroup).Methods("POST")
-	router.HandleFunc("/groups", s.GetAllGroups).Methods("GET")
-	router.HandleFunc("/groups/{id}", s.GetOneGroup).Methods("GET")
-	router.HandleFunc("/groups/{id}", s.UpdateGroup).Methods("PATCH")
-	router.HandleFunc("/groups/{id}", s.DeleteGroup).Methods("DELETE")
+	router.HandleFunc("/group", s.createGroup).Methods("POST")
+	router.HandleFunc("/groups", s.getAllGroups).Methods("GET")
+	router.HandleFunc("/groups/{id}", s.getOneGroup).Methods("GET")
+	router.HandleFunc("/groups/{id}", s.updateGroup).Methods("PATCH")
+	router.HandleFunc("/groups/{id}", s.deleteGroup).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(discoAddr, router))
 	return
 }
 
-func (s *DiscoServer) CreateGroup(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) createGroup(w http.ResponseWriter, r *http.Request) {
 	var newGroup group.Group
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -62,7 +69,7 @@ func (s *DiscoServer) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(id)
 }
 
-func (s *DiscoServer) GetOneGroup(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) getOneGroup(w http.ResponseWriter, r *http.Request) {
 	groupID := mux.Vars(r)["id"]
 
 	group, err := s.repo.GetGroup(groupID)
@@ -73,7 +80,7 @@ func (s *DiscoServer) GetOneGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(group)
 }
 
-func (s *DiscoServer) GetAllGroups(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) getAllGroups(w http.ResponseWriter, r *http.Request) {
 	allGroups, err := s.repo.GetAllGroups()
 	if err != nil {
 		fmt.Fprintf(w, "Error getting groups: %v", err)
@@ -81,7 +88,7 @@ func (s *DiscoServer) GetAllGroups(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(allGroups)
 }
 
-func (s *DiscoServer) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) updateGroup(w http.ResponseWriter, r *http.Request) {
 	var updatedGroup group.Group
 
 	reqBody, err := ioutil.ReadAll(r.Body)
@@ -102,7 +109,7 @@ func (s *DiscoServer) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(id)
 }
 
-func (s *DiscoServer) DeleteGroup(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) deleteGroup(w http.ResponseWriter, r *http.Request) {
 	groupID := mux.Vars(r)["id"]
 
 	err := s.repo.DeleteGroup(groupID)
