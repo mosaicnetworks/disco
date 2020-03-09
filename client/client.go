@@ -19,7 +19,7 @@ type DiscoClient struct {
 // url
 func NewDiscoClient(url string) *DiscoClient {
 	return &DiscoClient{
-		url: url,
+		url: fmt.Sprintf("http://%s", url),
 	}
 }
 
