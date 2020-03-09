@@ -9,11 +9,23 @@ import (
 	"github.com/mosaicnetworks/babble/src/proxy/dummy"
 )
 
+const (
+	inputViewName  = "input"
+	outputViewName = "output"
+)
+
+/*******************************************************************************
+InputWidget
+*******************************************************************************/
+
+// InputWidget is a text input widget that implements the gocui.Manager
+// interface. It wires the ENTER key to submit a msg to the babble proxy.
 type InputWidget struct {
 	Proxy   *dummy.InmemDummyClient
 	Moniker string
 }
 
+// NewInputWidget instantiates a new InputWidget.
 func NewInputWidget(proxy *dummy.InmemDummyClient, moniker string) *InputWidget {
 	return &InputWidget{
 		Proxy:   proxy,
@@ -21,10 +33,11 @@ func NewInputWidget(proxy *dummy.InmemDummyClient, moniker string) *InputWidget 
 	}
 }
 
+// Layout implements the gocui.Manager interface
 func (w *InputWidget) Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
-	v, err := g.SetView("input", -1, maxY-5, maxX, maxY)
+	v, err := g.SetView(inputViewName, -1, maxY-5, maxX, maxY)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -37,7 +50,7 @@ func (w *InputWidget) Layout(g *gocui.Gui) error {
 
 		// Wire up the Enter key to submit a transaction to Babble through the
 		// proxy
-		if err := g.SetKeybinding("input",
+		if err := g.SetKeybinding(inputViewName,
 			gocui.KeyEnter,
 			gocui.ModNone,
 			func(g *gocui.Gui, v *gocui.View) error {
@@ -56,7 +69,7 @@ func (w *InputWidget) Layout(g *gocui.Gui) error {
 			return err
 		}
 
-		if _, err := g.SetCurrentView("input"); err != nil {
+		if _, err := g.SetCurrentView(inputViewName); err != nil {
 			return err
 		}
 	}
@@ -64,17 +77,25 @@ func (w *InputWidget) Layout(g *gocui.Gui) error {
 	return nil
 }
 
-type MainWidget struct {
+/*******************************************************************************
+OutputWidget
+*******************************************************************************/
+
+// OutputWidget is a text display widget that implements the gocui.Manager
+// interface. It is usd to diplay text.
+type OutputWidget struct {
 }
 
-func NewMainWidget() *MainWidget {
-	return &MainWidget{}
+// NewOutputWidget instantiates a new MainWidget
+func NewOutputWidget() *OutputWidget {
+	return &OutputWidget{}
 }
 
-func (w *MainWidget) Layout(g *gocui.Gui) error {
+// Layout implments the gocui.Manager interface
+func (w *OutputWidget) Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 
-	if v, err := g.SetView("main", -1, -1, maxX, maxY-5); err != nil {
+	if v, err := g.SetView(outputViewName, -1, -1, maxX, maxY-5); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -86,38 +107,46 @@ func (w *MainWidget) Layout(g *gocui.Gui) error {
 	return nil
 }
 
-type BChatTui struct {
-	cui   *gocui.Gui
+/*******************************************************************************
+BChatGui
+*******************************************************************************/
+
+// BChatGui represents a terminal-base graphical user interface for BChat
+type BChatGui struct {
+	gui   *gocui.Gui
 	proxy *dummy.InmemDummyClient
 }
 
-func NewBChatTui(proxy *dummy.InmemDummyClient, moniker string) BChatTui {
+// NewBChatGui instantiates a new BChatGui
+func NewBChatGui(proxy *dummy.InmemDummyClient, moniker string) BChatGui {
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Panicln(err)
 	}
 
 	inputWidget := NewInputWidget(proxy, moniker)
-	mainWidget := NewMainWidget()
-	g.SetManager(inputWidget, mainWidget)
+	outputWidget := NewOutputWidget()
+	g.SetManager(inputWidget, outputWidget)
 
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		log.Panicln(err)
 	}
 
-	return BChatTui{
-		cui:   g,
+	return BChatGui{
+		gui:   g,
 		proxy: proxy,
 	}
 }
 
-func (b *BChatTui) Loop() error {
-	defer b.cui.Close()
+// Loop runs the main loop where and regularly updates the output widget to
+// reflect the latest committed messages
+func (b *BChatGui) Loop() error {
+	defer b.gui.Close()
 
 	go func() {
 		for {
-			b.cui.Update(func(g *gocui.Gui) error {
-				v, err := g.View("main")
+			b.gui.Update(func(g *gocui.Gui) error {
+				v, err := g.View(outputViewName)
 				if err != nil {
 					return err
 				}
@@ -131,7 +160,7 @@ func (b *BChatTui) Loop() error {
 		}
 	}()
 
-	if err := b.cui.MainLoop(); err != nil && err != gocui.ErrQuit {
+	if err := b.gui.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}
 

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewCreateCmd produces a CreateCmd which which stats a new BChat group and
+// NewCreateCmd produces a CreateCmd which stats a new BChat group and
 // advertises it in the discovery service
 func NewCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -78,12 +78,10 @@ func advertiseGroup(groupID string, title string, peers []*peers.Peer) error {
 
 	discoClient := client.NewDiscoClient(_config.DiscoAddr)
 
-	id, err := discoClient.CreateGroup(*newGroup)
+	_, err := discoClient.CreateGroup(*newGroup)
 	if err != nil {
 		return fmt.Errorf("Error creating group: %v", err)
 	}
-
-	fmt.Printf("Group ID: %v\n", id)
 
 	return nil
 }
