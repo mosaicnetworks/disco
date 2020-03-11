@@ -81,11 +81,13 @@ func (s *DiscoServer) getOneGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *DiscoServer) getAllGroups(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("GetAllGroups")
 	allGroups, err := s.repo.GetAllGroups()
 	if err != nil {
 		fmt.Fprintf(w, "Error getting groups: %v", err)
 	}
 	json.NewEncoder(w).Encode(allGroups)
+	fmt.Println("GetAllGroups Done")
 }
 
 func (s *DiscoServer) updateGroup(w http.ResponseWriter, r *http.Request) {

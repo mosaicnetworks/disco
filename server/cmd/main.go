@@ -6,7 +6,9 @@ import (
 )
 
 func main() {
-	groupRepo := group.NewInmemGroupRepository()
+	// Group entries have a TTL of 600s, old items are pruned at not more than
+	// 60 sec intervals
+	groupRepo := group.NewInmemGroupRepository(600, 60)
 
 	discoServer := server.NewDiscoServer(groupRepo)
 

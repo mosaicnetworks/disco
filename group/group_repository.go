@@ -21,13 +21,18 @@ type GroupRepository interface {
 // map of groups. It is thread safe.
 type InmemGroupRepository struct {
 	sync.Mutex
-	groups map[string]*Group
+	groups       map[string]*Group
+	timeout      int
+	pruneTimeout int
+	nextPrune    int64
 }
 
 // NewInmemGroupRepository instantiates a new InmemGroupRepository
-func NewInmemGroupRepository() *InmemGroupRepository {
+func NewInmemGroupRepository(timeout int, pruneTimeout int) *InmemGroupRepository {
 	return &InmemGroupRepository{
-		groups: make(map[string]*Group),
+		groups:       make(map[string]*Group),
+		timeout:      timeout,
+		pruneTimeout: pruneTimeout,
 	}
 }
 
@@ -36,6 +41,8 @@ func NewInmemGroupRepository() *InmemGroupRepository {
 func (igr *InmemGroupRepository) GetAllGroups() (map[string]*Group, error) {
 	igr.Lock()
 	defer igr.Unlock()
+
+	igr.PruneGroups()
 
 	return igr.groups, nil
 }
@@ -83,5 +90,41 @@ func (igr *InmemGroupRepository) DeleteGroup(id string) error {
 	defer igr.Unlock()
 
 	delete(igr.groups, id)
+	return nil
+}
+
+// PruneGroups iterates through the group list removing all items who
+// were last updated more than igr.timeout seconds ago.
+// If this function has been run within the last igr.pruneTimeout seconds,
+// then the function returns without updating any groups.
+// This function should only be called from a function that has already
+// called igr.Lock().
+func (igr *InmemGroupRepository) PruneGroups() error {
+
+	//	igr.Lock()
+	//	defer igr.Unlock()
+
+	currentTime := time.Now().Unix()
+
+	if igr.nextPrune > currentTime {
+		// Next prune is not yet due
+
+		fmt.Println("Prune Groups - do nothing")
+		return nil
+	}
+
+	fmt.Println("Prune Groups")
+
+	igr.nextPrune = currentTime + int64(igr.pruneTimeout)
+
+	triggerTime := currentTime - int64(igr.timeout)
+
+	for key, group := range igr.groups {
+		if group.LastUpdated < triggerTime {
+			fmt.Println("Prune Groups - delete " + key)
+			delete(igr.groups, key)
+		}
+	}
+
 	return nil
 }
