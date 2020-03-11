@@ -67,7 +67,11 @@ func (igr *InmemGroupRepository) SetGroup(group *Group) (string, error) {
 	igr.Lock()
 	defer igr.Unlock()
 
-	igr.groups[group.GroupUID] = group
+	g, ok := igr.groups[group.GroupUID]
+
+	if !ok || g.LastBlockIndex <= group.LastBlockIndex {
+		igr.groups[group.GroupUID] = group
+	}
 
 	return group.GroupUID, nil
 }
