@@ -14,7 +14,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/mosaicnetworks/babble v0.7.0
 	github.com/nsf/termbox-go v0.0.0-20200204031403-4d2b513ad8be // indirect
-	github.com/sirupsen/logrus v1.4.2 // indirect
+	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/viper v1.6.2
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect

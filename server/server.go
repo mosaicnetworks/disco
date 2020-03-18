@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mosaicnetworks/babble/src/net/signal/wamp"
 	"github.com/mosaicnetworks/disco/group"
+	"github.com/sirupsen/logrus"
 )
 
 // DiscoServer is a peer-discovery and webrtc-signaling service for Babble.
@@ -19,19 +20,33 @@ import (
 // create direct p2p connections, and relies on the WAMP protocol which is
 // basically RPC over web-sockets.
 type DiscoServer struct {
-	repo group.GroupRepository
+	repo     group.GroupRepository
+	certFile string
+	keyFile  string
+	logger   *logrus.Entry
 }
 
 // NewDiscoServer instantiates a new DiscoServer with a GroupRepository.
-func NewDiscoServer(repo group.GroupRepository) *DiscoServer {
+func NewDiscoServer(repo group.GroupRepository,
+	certFile string,
+	keyFile string,
+	logger *logrus.Entry) *DiscoServer {
+
 	return &DiscoServer{
-		repo: repo,
+		repo:     repo,
+		certFile: certFile,
+		keyFile:  keyFile,
+		logger:   logger,
 	}
 }
 
 // Serve starts the peer-discovery and signaling services
 func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
-	wampServer, err := wamp.NewServer(signalAddr, realm)
+	wampServer, err := wamp.NewServer(signalAddr,
+		realm,
+		s.certFile,
+		s.keyFile,
+		s.logger)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +59,7 @@ func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
 	router.HandleFunc("/groups/{id}", s.getOneGroup).Methods("GET")
 	router.HandleFunc("/groups/{id}", s.updateGroup).Methods("PATCH")
 	router.HandleFunc("/groups/{id}", s.deleteGroup).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(discoAddr, router))
+	log.Fatal(http.ListenAndServeTLS(discoAddr, s.certFile, s.keyFile, router))
 	return
 }
 

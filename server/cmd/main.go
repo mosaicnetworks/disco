@@ -1,14 +1,18 @@
 package main
 
 import (
-	"github.com/mosaicnetworks/disco/group"
-	"github.com/mosaicnetworks/disco/server"
+	"os"
+
+	cmd "github.com/mosaicnetworks/disco/server/cmd/commands"
 )
 
 func main() {
-	groupRepo := group.NewInmemGroupRepository()
+	rootCmd := cmd.RootCmd
 
-	discoServer := server.NewDiscoServer(groupRepo)
+	//Do not print usage when error occurs
+	rootCmd.SilenceUsage = true
 
-	discoServer.Serve(":8080", ":9090", "office")
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
