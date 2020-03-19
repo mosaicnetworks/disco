@@ -83,7 +83,7 @@ func (c *DiscoClient) GetAllGroups() (map[string]*group.Group, error) {
 	path := fmt.Sprintf("%s/groups", c.url)
 	fmt.Println("path: ", path)
 
-	resp, err := http.Get(path)
+	resp, err := c.client.Get(path)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (c *DiscoClient) GetGroupByID(id string) (*group.Group, error) {
 	path := fmt.Sprintf("%s/groups/%s", c.url, id)
 	fmt.Println("path: ", path)
 
-	resp, err := http.Get(path)
+	resp, err := c.client.Get(path)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (c *DiscoClient) CreateGroup(group group.Group) (string, error) {
 		return "", fmt.Errorf("Error marshalling group: %v", err)
 	}
 
-	resp, err := http.Post(path, "application/json", bytes.NewBuffer(jsonValue))
+	resp, err := c.client.Post(path, "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return "", err
 	}
