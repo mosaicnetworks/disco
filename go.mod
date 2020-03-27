@@ -1,9 +1,10 @@
 module github.com/mosaicnetworks/disco
 
-go 1.13
+go 1.14
 
-// XXX
-replace github.com/mosaicnetworks/babble => /home/martin/gowork/src/github.com/mosaicnetworks/babble
+// XXX reauires the webrtc-stream branch of Babble
+// uncomment this line and point to your local version of the Babble repo
+// replace github.com/mosaicnetworks/babble => /home/martin/gowork/src/github.com/mosaicnetworks/babble
 
 require (
 	github.com/btcsuite/btcd v0.20.1-beta // indirect
