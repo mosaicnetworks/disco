@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/mosaicnetworks/disco/group"
 	"github.com/mosaicnetworks/disco/server"
 	"github.com/sirupsen/logrus"
@@ -8,15 +10,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-var discoUrl = ":1443"
-var signalUrl = ":2443"
+var address = "localhost"
+var discoPort = "1443"
+var signalPort = "2443"
 var realm = "office"
 var certFile = "cert.pem"
 var keyFile = "key.pem"
 
 func init() {
-	RootCmd.Flags().StringVar(&discoUrl, "disco-url", discoUrl, "API IP:Port")
-	RootCmd.Flags().StringVar(&signalUrl, "signal-url", signalUrl, "Signal IP:Port")
+	RootCmd.Flags().StringVar(&address, "address", address, "Address of the server")
+	RootCmd.Flags().StringVar(&discoPort, "disco-port", discoPort, "Discovery API port")
+	RootCmd.Flags().StringVar(&signalPort, "signal-port", signalPort, "WebRTC-Signaling port")
 	RootCmd.Flags().StringVar(&realm, "realm", realm, "Administrative routing domain within the WebRTC signaling")
 	RootCmd.Flags().StringVar(&certFile, "cert-file", certFile, "File containing TLS certificate")
 	RootCmd.Flags().StringVar(&keyFile, "key-file", keyFile, "File containing certificate key")
@@ -38,6 +42,9 @@ func runServer(cmd *cobra.Command, args []string) error {
 		certFile,
 		keyFile,
 		logrus.New().WithField("component", "disco-server"))
+
+	discoUrl := fmt.Sprintf("%s:%s", address, discoPort)
+	signalUrl := fmt.Sprintf("%s:%s", address, signalPort)
 
 	discoServer.Serve(discoUrl, signalUrl, "office")
 

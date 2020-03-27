@@ -27,10 +27,12 @@ type DiscoServer struct {
 }
 
 // NewDiscoServer instantiates a new DiscoServer with a GroupRepository.
-func NewDiscoServer(repo group.GroupRepository,
+func NewDiscoServer(
+	repo group.GroupRepository,
 	certFile string,
 	keyFile string,
-	logger *logrus.Entry) *DiscoServer {
+	logger *logrus.Entry,
+) *DiscoServer {
 
 	return &DiscoServer{
 		repo:     repo,
@@ -67,7 +69,7 @@ func (s *DiscoServer) createGroup(w http.ResponseWriter, r *http.Request) {
 	var newGroup group.Group
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the group title and description only in order to update")
+		fmt.Fprintf(w, "Error reading request body: %v", err)
 	}
 
 	err = json.Unmarshal(reqBody, &newGroup)

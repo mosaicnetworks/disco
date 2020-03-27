@@ -58,8 +58,8 @@ func (igr *InmemGroupRepository) GetGroup(id string) (*Group, error) {
 // set, we assign a random one and insert the group in the map. In any case we
 // return the ID of the group.
 func (igr *InmemGroupRepository) SetGroup(group *Group) (string, error) {
-	if group.GroupUID == "" {
-		group.GroupUID = uuid.New().String()
+	if group.ID == "" {
+		group.ID = uuid.New().String()
 	}
 
 	group.LastUpdated = time.Now().Unix()
@@ -67,9 +67,9 @@ func (igr *InmemGroupRepository) SetGroup(group *Group) (string, error) {
 	igr.Lock()
 	defer igr.Unlock()
 
-	igr.groups[group.GroupUID] = group
+	igr.groups[group.ID] = group
 
-	return group.GroupUID, nil
+	return group.ID, nil
 }
 
 // DeleteGroup implements the GroupRepository interface and removes a group from
