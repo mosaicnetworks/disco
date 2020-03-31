@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/mosaicnetworks/disco/group"
 	"github.com/sirupsen/logrus"
@@ -25,11 +26,15 @@ type DiscoClient struct {
 
 // NewDiscoClient creates a new DiscoClient for a server hosted at the provided
 // url
-func NewDiscoClient(url string, certFile string, logger *logrus.Entry) (*DiscoClient, error) {
+func NewDiscoClient(url string, certFile string, skipVerify bool, logger *logrus.Entry) (*DiscoClient, error) {
 	tlscfg := &tls.Config{}
 
-	// If told to trust a certificate.
-	if certFile != "" {
+	if skipVerify {
+		logger.Debug("Skip Verify. Accepting any certificate provided by signal server.")
+		tlscfg.InsecureSkipVerify = true
+	} else if _, err := os.Stat(certFile); os.IsNotExist(err) {
+		logger.Debugf("No certificate file found. Relying on platform trusted certificates.")
+	} else {
 		// Load PEM-encoded certificate to trust.
 		certPEM, err := ioutil.ReadFile(certFile)
 		if err != nil {
@@ -146,4 +151,31 @@ func (c *DiscoClient) CreateGroup(group group.Group) (string, error) {
 	}
 
 	return id, nil
+}
+
+func (c *DiscoClient) DeleteGroup(id string) error {
+	path := fmt.Sprintf("%s/groups/%s", c.url, id)
+	fmt.Println("path: ", path)
+
+	// Create request
+	req, err := http.NewRequest(
+		http.MethodDelete,
+		path,
+		nil)
+	if err != nil {
+		return err
+	}
+
+	// Fetch Request
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	// Display Results
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Error deleting group %s: %s", id, resp.Status)
+	}
+
+	return nil
 }
