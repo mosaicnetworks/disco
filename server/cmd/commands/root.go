@@ -13,7 +13,7 @@ import (
 var address = "localhost"
 var discoPort = "1443"
 var signalPort = "2443"
-var realm = "office"
+var realm = "main"
 var certFile = "cert.pem"
 var keyFile = "key.pem"
 
@@ -46,7 +46,7 @@ func runServer(cmd *cobra.Command, args []string) error {
 	discoUrl := fmt.Sprintf("%s:%s", address, discoPort)
 	signalUrl := fmt.Sprintf("%s:%s", address, signalPort)
 
-	discoServer.Serve(discoUrl, signalUrl, "office")
+	discoServer.Serve(discoUrl, signalUrl, realm)
 
 	return nil
 }

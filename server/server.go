@@ -58,6 +58,8 @@ func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/group", s.createGroup).Methods("POST")
 	router.HandleFunc("/groups", s.getAllGroups).Methods("GET")
+	// XXX should use query parameters instead of path
+	router.HandleFunc("/appgroups/{id}", s.getAllGroupsByAppID).Methods("GET")
 	router.HandleFunc("/groups/{id}", s.getOneGroup).Methods("GET")
 	router.HandleFunc("/groups/{id}", s.updateGroup).Methods("PATCH")
 	router.HandleFunc("/groups/{id}", s.deleteGroup).Methods("DELETE")
@@ -103,6 +105,16 @@ func (s *DiscoServer) getAllGroups(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error getting groups: %v", err)
 	}
 	json.NewEncoder(w).Encode(allGroups)
+}
+
+func (s *DiscoServer) getAllGroupsByAppID(w http.ResponseWriter, r *http.Request) {
+	appID := mux.Vars(r)["id"]
+
+	appGroups, err := s.repo.GetAllGroupsByAppID(appID)
+	if err != nil {
+		fmt.Fprintf(w, "Error getting groups: %v", err)
+	}
+	json.NewEncoder(w).Encode(appGroups)
 }
 
 func (s *DiscoServer) updateGroup(w http.ResponseWriter, r *http.Request) {

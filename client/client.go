@@ -82,10 +82,34 @@ func NewDiscoClient(url string, certFile string, skipVerify bool, logger *logrus
 	return res, nil
 }
 
-// GetAllGroups returs all groups in a map where the key is the ID of the group
-// and the value is a pointer to the corresponding Group object.
+// GetAllGroups returs all groups for all apps. The result is a map where the
+// key is the ID of the group and the value is a pointer to the corresponding
+// Group object.
 func (c *DiscoClient) GetAllGroups() (map[string]*group.Group, error) {
 	path := fmt.Sprintf("%s/groups", c.url)
+	fmt.Println("path: ", path)
+
+	resp, err := c.client.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	var allGroups map[string]*group.Group
+	err = json.Unmarshal(body, &allGroups)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing groups: %v", err)
+	}
+
+	return allGroups, nil
+}
+
+// GetAllGroupsByAppID returs all groups associated with an AppID. The result is
+// a map where the key is the ID of the group and the value is a pointer to the
+// corresponding Group object.
+func (c *DiscoClient) GetAllGroupsByAppID(appID string) (map[string]*group.Group, error) {
+	path := fmt.Sprintf("%s/appgroups/%s", c.url, appID)
 	fmt.Println("path: ", path)
 
 	resp, err := c.client.Get(path)
