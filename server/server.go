@@ -57,10 +57,8 @@ func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/group", s.createGroup).Methods("POST")
-	router.HandleFunc("/groups", s.getAllGroups).Methods("GET")
-	// XXX should use query parameters instead of path
-	router.HandleFunc("/appgroups/{id}", s.getAllGroupsByAppID).Methods("GET")
-	router.HandleFunc("/groups/{id}", s.getOneGroup).Methods("GET")
+	router.HandleFunc("/groups", s.getGroups).Methods("GET")
+	router.HandleFunc("/groups/{id}", s.getGroup).Methods("GET")
 	router.HandleFunc("/groups/{id}", s.updateGroup).Methods("PATCH")
 	router.HandleFunc("/groups/{id}", s.deleteGroup).Methods("DELETE")
 	log.Fatal(http.ListenAndServeTLS(discoAddr, s.certFile, s.keyFile, router))
@@ -88,7 +86,26 @@ func (s *DiscoServer) createGroup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(id)
 }
 
-func (s *DiscoServer) getOneGroup(w http.ResponseWriter, r *http.Request) {
+func (s *DiscoServer) getGroups(w http.ResponseWriter, r *http.Request) {
+	appID := r.URL.Query().Get("app-id")
+
+	groups := make(map[string]*group.Group)
+	var err error
+
+	if appID == "" {
+		groups, err = s.repo.GetAllGroups()
+	} else {
+		groups, err = s.repo.GetAllGroupsByAppID(appID)
+	}
+
+	if err != nil {
+		fmt.Fprintf(w, "Error getting groups: %v", err)
+	}
+
+	json.NewEncoder(w).Encode(groups)
+}
+
+func (s *DiscoServer) getGroup(w http.ResponseWriter, r *http.Request) {
 	groupID := mux.Vars(r)["id"]
 
 	group, err := s.repo.GetGroup(groupID)
@@ -97,24 +114,6 @@ func (s *DiscoServer) getOneGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(group)
-}
-
-func (s *DiscoServer) getAllGroups(w http.ResponseWriter, r *http.Request) {
-	allGroups, err := s.repo.GetAllGroups()
-	if err != nil {
-		fmt.Fprintf(w, "Error getting groups: %v", err)
-	}
-	json.NewEncoder(w).Encode(allGroups)
-}
-
-func (s *DiscoServer) getAllGroupsByAppID(w http.ResponseWriter, r *http.Request) {
-	appID := mux.Vars(r)["id"]
-
-	appGroups, err := s.repo.GetAllGroupsByAppID(appID)
-	if err != nil {
-		fmt.Fprintf(w, "Error getting groups: %v", err)
-	}
-	json.NewEncoder(w).Encode(appGroups)
 }
 
 func (s *DiscoServer) updateGroup(w http.ResponseWriter, r *http.Request) {

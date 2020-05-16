@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/mosaicnetworks/disco/group"
@@ -82,11 +83,17 @@ func NewDiscoClient(url string, certFile string, skipVerify bool, logger *logrus
 	return res, nil
 }
 
-// GetAllGroups returs all groups for all apps. The result is a map where the
-// key is the ID of the group and the value is a pointer to the corresponding
-// Group object.
-func (c *DiscoClient) GetAllGroups() (map[string]*group.Group, error) {
+// GetGroups returns a map of groups indexed by ID. The optional appID parameter
+// is used to query only those groups belonging to a specific applications. If
+// appID is the empty string, all groups, from all applications, are returned.
+func (c *DiscoClient) GetGroups(appID string) (map[string]*group.Group, error) {
 	path := fmt.Sprintf("%s/groups", c.url)
+
+	if appID != "" {
+		query := url.PathEscape(fmt.Sprintf("app-id=%s", appID))
+		path = fmt.Sprintf("%s?%s", path, query)
+	}
+
 	fmt.Println("path: ", path)
 
 	resp, err := c.client.Get(path)
@@ -99,30 +106,7 @@ func (c *DiscoClient) GetAllGroups() (map[string]*group.Group, error) {
 	var allGroups map[string]*group.Group
 	err = json.Unmarshal(body, &allGroups)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing groups: %v", err)
-	}
-
-	return allGroups, nil
-}
-
-// GetAllGroupsByAppID returs all groups associated with an AppID. The result is
-// a map where the key is the ID of the group and the value is a pointer to the
-// corresponding Group object.
-func (c *DiscoClient) GetAllGroupsByAppID(appID string) (map[string]*group.Group, error) {
-	path := fmt.Sprintf("%s/appgroups/%s", c.url, appID)
-	fmt.Println("path: ", path)
-
-	resp, err := c.client.Get(path)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-
-	var allGroups map[string]*group.Group
-	err = json.Unmarshal(body, &allGroups)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing groups: %v", err)
+		return nil, fmt.Errorf("Error parsing groups: %v\n%s", err, body)
 	}
 
 	return allGroups, nil
