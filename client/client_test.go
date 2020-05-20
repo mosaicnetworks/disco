@@ -11,11 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-/* TODO
-- Test connecting with self-signed certificates and skip-verify
-- Test all methods
-*/
-
 func TestSetGroup(t *testing.T) {
 
 	// Init server and client
