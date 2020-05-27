@@ -13,6 +13,9 @@ import (
 var address = "localhost"
 var discoPort = "1443"
 var signalPort = "2443"
+var icePort = "3478"
+var iceUsername = "test"
+var icePassword = "test"
 var realm = "main"
 var certFile = "cert.pem"
 var keyFile = "key.pem"
@@ -21,6 +24,7 @@ func init() {
 	RootCmd.Flags().StringVar(&address, "address", address, "Address of the server")
 	RootCmd.Flags().StringVar(&discoPort, "disco-port", discoPort, "Discovery API port")
 	RootCmd.Flags().StringVar(&signalPort, "signal-port", signalPort, "WebRTC-Signaling port")
+	RootCmd.Flags().StringVar(&icePort, "ice-port", icePort, "ICE server port")
 	RootCmd.Flags().StringVar(&realm, "realm", realm, "Administrative routing domain within the WebRTC signaling")
 	RootCmd.Flags().StringVar(&certFile, "cert-file", certFile, "File containing TLS certificate")
 	RootCmd.Flags().StringVar(&keyFile, "key-file", keyFile, "File containing certificate key")
@@ -45,8 +49,15 @@ func runServer(cmd *cobra.Command, args []string) error {
 
 	discoUrl := fmt.Sprintf("%s:%s", address, discoPort)
 	signalUrl := fmt.Sprintf("%s:%s", address, signalPort)
+	iceUrl := fmt.Sprintf("%s:%s", address, icePort)
 
-	discoServer.Serve(discoUrl, signalUrl, realm)
+	discoServer.Serve(
+		discoUrl,
+		signalUrl,
+		iceUrl,
+		iceUsername,
+		icePassword,
+		realm)
 
 	return nil
 }

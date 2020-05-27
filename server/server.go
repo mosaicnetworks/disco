@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/mosaicnetworks/babble/src/net/signal/wamp"
 	"github.com/mosaicnetworks/disco/group"
+	"github.com/pion/logging"
+	"github.com/pion/turn/v2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,9 +46,18 @@ func NewDiscoServer(
 	}
 }
 
-// Serve starts the peer-discovery and signaling services
-func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
-	wampServer, err := wamp.NewServer(signalAddr,
+// Serve starts the peer-discovery, signaling, and TURN servers.
+func (s *DiscoServer) Serve(
+	discoAddr string,
+	signalAddr string,
+	turnAddr string,
+	turnUsername string,
+	turnPassword string,
+	realm string) {
+
+	// Create and start WAMP server
+	wampServer, err := wamp.NewServer(
+		signalAddr,
 		realm,
 		s.certFile,
 		s.keyFile,
@@ -55,6 +68,19 @@ func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
 	go wampServer.Run()
 	defer wampServer.Shutdown()
 
+	// Create and start TURN server
+	turnServer, err := createAndStartTURNServer(
+		turnAddr,
+		turnUsername,
+		turnPassword,
+		realm,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer turnServer.Close()
+
+	// Configure and start discovery API
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/group", s.createGroup).Methods("POST")
 	router.HandleFunc("/groups", s.getGroups).Methods("GET")
@@ -63,6 +89,65 @@ func (s *DiscoServer) Serve(discoAddr string, signalAddr string, realm string) {
 	router.HandleFunc("/groups/{id}", s.deleteGroup).Methods("DELETE")
 	log.Fatal(http.ListenAndServeTLS(discoAddr, s.certFile, s.keyFile, router))
 	return
+}
+
+func createAndStartTURNServer(
+	turnAddr string,
+	turnUsername string,
+	turnPassword string,
+	realm string) (*turn.Server, error) {
+
+	// Populate the map of authorised users with the single user defined by
+	// turnUsername and turnPassword.
+	usersMap := map[string][]byte{}
+	usersMap[turnUsername] = turn.GenerateAuthKey(turnUsername, realm, turnPassword)
+
+	// Split the turnAddr into IP and Port.
+	split := strings.Split(turnAddr, ":")
+	if len(split) != 2 {
+		return nil, fmt.Errorf("Invalid ICE address format")
+	}
+	bindAddr := split[0]
+	icePort := split[1]
+
+	// Create a UDP listener to pass into pion/turn
+	udpListener, err := net.ListenPacket("udp4", "0.0.0.0:"+icePort)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create TURN server listener: %s", err)
+	}
+
+	// Override the default log level
+	logFactory := logging.NewDefaultLoggerFactory()
+	logFactory.DefaultLogLevel = logging.LogLevelInfo
+
+	s, err := turn.NewServer(turn.ServerConfig{
+		Realm: realm,
+		// Set AuthHandler callback
+		// This is called everytime a user tries to authenticate with the TURN
+		// server. Return the key for that user, or false when no user is found
+		AuthHandler: func(username string, realm string, srcAddr net.Addr) ([]byte, bool) {
+			if key, ok := usersMap[username]; ok {
+				return key, true
+			}
+			return nil, false
+		},
+		// PacketConnConfigs is a list of UDP Listeners and the configuration around them
+		PacketConnConfigs: []turn.PacketConnConfig{
+			{
+				PacketConn: udpListener,
+				RelayAddressGenerator: &turn.RelayAddressGeneratorStatic{
+					RelayAddress: net.ParseIP(bindAddr), // Claim that we are listening on IP passed by user (This should be your Public IP)
+					Address:      "0.0.0.0",             // But actually be listening on every interface
+				},
+			},
+		},
+		LoggerFactory: logFactory,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Fail to create TURN server: %s", err)
+	}
+
+	return s, nil
 }
 
 func (s *DiscoServer) createGroup(w http.ResponseWriter, r *http.Request) {
