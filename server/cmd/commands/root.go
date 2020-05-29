@@ -21,7 +21,7 @@ var certFile = "cert.pem"
 var keyFile = "key.pem"
 
 func init() {
-	RootCmd.Flags().StringVar(&address, "address", address, "Address of the server")
+	RootCmd.Flags().StringVar(&address, "address", address, "Advertise address (use public address)")
 	RootCmd.Flags().StringVar(&discoPort, "disco-port", discoPort, "Discovery API port")
 	RootCmd.Flags().StringVar(&signalPort, "signal-port", signalPort, "WebRTC-Signaling port")
 	RootCmd.Flags().StringVar(&icePort, "ice-port", icePort, "ICE server port")
@@ -47,8 +47,8 @@ func runServer(cmd *cobra.Command, args []string) error {
 		keyFile,
 		logrus.New().WithField("component", "disco-server"))
 
-	discoUrl := fmt.Sprintf("%s:%s", address, discoPort)
-	signalUrl := fmt.Sprintf("%s:%s", address, signalPort)
+	discoUrl := fmt.Sprintf("0.0.0.0:%s", discoPort)
+	signalUrl := fmt.Sprintf("0.0.0.0:%s", signalPort)
 	iceUrl := fmt.Sprintf("%s:%s", address, icePort)
 
 	discoServer.Serve(
