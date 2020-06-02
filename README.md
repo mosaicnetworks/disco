@@ -21,20 +21,36 @@ Usage:
   disco [flags]
 
 Flags:
-      --address string       Address of the server (default "localhost")
-      --cert-file string     File containing TLS certificate (default "cert.pem")
-      --disco-port string    Discovery API port (default "1443")
-  -h, --help                 help for disco
-      --key-file string      File containing certificate key (default "key.pem")
-      --realm string         Administrative routing domain within the WebRTC signaling (default "main")
-      --signal-port string   WebRTC-Signaling port (default "2443")
+      --address string          Advertise address (use public address) (default "0.0.0.0")
+      --cert-file string        File containing TLS certificate (default "cert.pem")
+      --disco-port string       Discovery API port (default "1443")
+  -h, --help                    help for disco
+      --ice-password string     ICE server password corresponding to username (default "test")
+      --ice-port string         ICE server port (default "3478")
+      --ice-username string     ICE server userame. Only this user will be allowed to use the ICE server (default "test")
+      --key-file string         File containing certificate key (default "key.pem")
+      --realm string            Administrative routing domain within the WebRTC signaling (default "main")
+      --signal-port string      WebRTC-Signaling port (default "2443")
+      --ttl duration            Group Time To Live, after which groups will be deleted (default 5m0s)
+      --ttl-hearbeat duration   Ticker frequency for checking group TTL (default 1m0s)
 ```
 
-The discovery API and WebRTC-signaling router are exposed on different ports,
-`disco-port` (default 1443) and `signal-port` (default 2443) respectively.
+The discovery API, WebRTC-signaling router, and TURN server are exposed on 
+different ports, `disco-port` (default 1443), `signal-port` (default 2443), and
+`ice-port` respectively. 
 
-Both services are secured with TLS, and the same underlying certificate. The
-certificate and key files are specified with `cert-file` and `key-file` options.
+The discovery API and WebRTC-signaling router bind to all interfaces `0.0.0.0`
+and are secured with TLS, with the same underlying certificate. The certificate 
+and key files are specified with `cert-file` and `key-file` options.
+
+The `TURN` server also binds to `0.0.0.0` but it advertises itself at the 
+address specified by `address`. This must be the public IP of the machine 
+running the server, as it will be used as a TURN relay address.
+
+The `ice-username` and `ice-password` options define the credentials of the TURN
+server. This will be the only user allowed to use the TURN server. `Babble` has 
+homonymous config options. To use `Babble` with a Disco TURN server, match the
+username and password fields.  
 
 To get started with a localhost disco server, simply run:
 

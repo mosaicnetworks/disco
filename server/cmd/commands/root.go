@@ -28,10 +28,12 @@ func init() {
 	RootCmd.Flags().StringVar(&discoPort, "disco-port", discoPort, "Discovery API port")
 	RootCmd.Flags().StringVar(&signalPort, "signal-port", signalPort, "WebRTC-Signaling port")
 	RootCmd.Flags().StringVar(&icePort, "ice-port", icePort, "ICE server port")
+	RootCmd.Flags().StringVar(&iceUsername, "ice-username", iceUsername, "ICE server userame. Only this user will be allowed to use the ICE server")
+	RootCmd.Flags().StringVar(&icePassword, "ice-password", icePassword, "ICE server password corresponding to username")
 	RootCmd.Flags().StringVar(&realm, "realm", realm, "Administrative routing domain within the WebRTC signaling")
 	RootCmd.Flags().StringVar(&certFile, "cert-file", certFile, "File containing TLS certificate")
 	RootCmd.Flags().StringVar(&keyFile, "key-file", keyFile, "File containing certificate key")
-	RootCmd.Flags().DurationVar(&ttl, "ttl", ttl, "Group Time To Live, after which they will be deleted")
+	RootCmd.Flags().DurationVar(&ttl, "ttl", ttl, "Group Time To Live, after which groups will be deleted")
 	RootCmd.Flags().DurationVar(&ttlHeartbeat, "ttl-hearbeat", ttlHeartbeat, "Ticker frequency for checking group TTL")
 	viper.BindPFlags(RootCmd.Flags())
 }
