@@ -88,16 +88,12 @@ func (s *DiscoServer) Serve(
 	go s.processTTL(ttlHearbeat, ttl)
 
 	// Configure and start discovery API
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/group", s.createGroup).Methods("POST")
-	router.HandleFunc("/groups", s.getGroups).Methods("GET")
-	router.HandleFunc("/groups/{id}", s.getGroup).Methods("GET")
-	router.HandleFunc("/groups/{id}", s.updateGroup).Methods("PATCH")
-	router.HandleFunc("/groups/{id}", s.deleteGroup).Methods("DELETE")
-	log.Fatal(http.ListenAndServeTLS(discoAddr, s.certFile, s.keyFile, router))
+	s.serveAPI(discoAddr)
+
 	return
 }
 
+// createAndStartTURNServer configures and runs the TURN server.
 func createAndStartTURNServer(
 	turnAddr string,
 	turnUsername string,
@@ -169,6 +165,17 @@ func (s *DiscoServer) processTTL(heartbeat time.Duration, ttl time.Duration) {
 			}
 		}
 	}
+}
+
+// serveAPI configures the handlers and runs the HTTP server.
+func (s *DiscoServer) serveAPI(discoAddr string) {
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/group", s.createGroup).Methods("POST")
+	router.HandleFunc("/groups", s.getGroups).Methods("GET")
+	router.HandleFunc("/groups/{id}", s.getGroup).Methods("GET")
+	router.HandleFunc("/groups/{id}", s.updateGroup).Methods("PATCH")
+	router.HandleFunc("/groups/{id}", s.deleteGroup).Methods("DELETE")
+	log.Fatal(http.ListenAndServeTLS(discoAddr, s.certFile, s.keyFile, router))
 }
 
 func (s *DiscoServer) createGroup(w http.ResponseWriter, r *http.Request) {
