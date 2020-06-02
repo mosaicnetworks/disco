@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/mosaicnetworks/babble/src/net/signal/wamp"
@@ -53,7 +54,9 @@ func (s *DiscoServer) Serve(
 	turnAddr string,
 	turnUsername string,
 	turnPassword string,
-	realm string) {
+	realm string,
+	ttl time.Duration,
+	ttlHearbeat time.Duration) {
 
 	// Create and start WAMP server
 	wampServer, err := wamp.NewServer(
@@ -79,6 +82,10 @@ func (s *DiscoServer) Serve(
 		log.Fatal(err)
 	}
 	defer turnServer.Close()
+
+	// Start the TTL routine that deletes groups when the exceed their Time To
+	// Live
+	go s.processTTL(ttlHearbeat, ttl)
 
 	// Configure and start discovery API
 	router := mux.NewRouter().StrictSlash(true)
@@ -148,6 +155,20 @@ func createAndStartTURNServer(
 	}
 
 	return s, nil
+}
+
+// processTTL deletes groups that have exceeded their Time To Live (TTL). It
+// will check each group at event intervals defined by the heartbeat parameter.
+func (s *DiscoServer) processTTL(heartbeat time.Duration, ttl time.Duration) {
+	for now := range time.Tick(heartbeat) {
+		allGroups, _ := s.repo.GetAllGroups()
+		for gid, g := range allGroups {
+			if g.LastUpdated+int64(ttl.Seconds()) < now.Unix() {
+				s.repo.DeleteGroup(gid)
+				s.logger.Debugf("Deletet group %s, TTL exceeded", g.Name)
+			}
+		}
+	}
 }
 
 func (s *DiscoServer) createGroup(w http.ResponseWriter, r *http.Request) {

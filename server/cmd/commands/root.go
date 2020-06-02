@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/mosaicnetworks/disco/group"
 	"github.com/mosaicnetworks/disco/server"
@@ -10,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var address = "localhost"
+var address = "0.0.0.0"
 var discoPort = "1443"
 var signalPort = "2443"
 var icePort = "3478"
@@ -19,6 +20,8 @@ var icePassword = "test"
 var realm = "main"
 var certFile = "cert.pem"
 var keyFile = "key.pem"
+var ttl = 5 * time.Minute
+var ttlHeartbeat = 1 * time.Minute
 
 func init() {
 	RootCmd.Flags().StringVar(&address, "address", address, "Advertise address (use public address)")
@@ -28,6 +31,8 @@ func init() {
 	RootCmd.Flags().StringVar(&realm, "realm", realm, "Administrative routing domain within the WebRTC signaling")
 	RootCmd.Flags().StringVar(&certFile, "cert-file", certFile, "File containing TLS certificate")
 	RootCmd.Flags().StringVar(&keyFile, "key-file", keyFile, "File containing certificate key")
+	RootCmd.Flags().DurationVar(&ttl, "ttl", ttl, "Group Time To Live, after which they will be deleted")
+	RootCmd.Flags().DurationVar(&ttlHeartbeat, "ttl-hearbeat", ttlHeartbeat, "Ticker frequency for checking group TTL")
 	viper.BindPFlags(RootCmd.Flags())
 }
 
@@ -57,7 +62,9 @@ func runServer(cmd *cobra.Command, args []string) error {
 		iceUrl,
 		iceUsername,
 		icePassword,
-		realm)
+		realm,
+		ttl,
+		ttlHeartbeat)
 
 	return nil
 }
